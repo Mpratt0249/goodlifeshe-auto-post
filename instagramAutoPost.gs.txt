@@ -1,0 +1,90 @@
+function shuffle_(arr) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+function createInstagramOnlyPosts() {
+  const SPREADSHEET_ID = '15KiXej64McJiT7utXTnc2QGFirvxwyk7OKk3TYUWKcs';
+  const TAB_NAME = 'IG Post';
+  const WEBSITE = 'https://www.goodlifeshe.com';
+  const sheet = SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName(TAB_NAME);
+  const tz = Session.getScriptTimeZone();
+  const date = Utilities.formatDate(new Date(), tz, 'yyyy-MM-dd HH:mm:ss');
+
+  const hashtags = [
+    '#goodlifeshe', '#naturalbeauty', '#cleanbeauty', '#bohostyle', '#wellnessjourney',
+    '#holisticliving', '#selfcare', '#selflove', '#glowup', '#beautyroutine',
+    '#mindfulmoments', '#feminineenergy', '#beachvibes', '#slowbeauty', '#earthinspired',
+    '#womeninbusiness', '#bossbabe', '#wellnesstips', '#herbalbeauty', '#nontoxicliving',
+    '#skingoals', '#bodyoils', '#drybrushing', '#innerglow', '#plantpowered',
+    '#bohobeauty', '#naturalskincare', '#consciousliving', '#goodvibesonly', '#loveyourskin'
+  ].join(' ');
+
+  const captions = shuffle_([
+    '✨ Nourish your glow from the inside out.',
+    '🌿 Beauty in balance. Wellness in every ritual.',
+    '👣 Barefoot, boho & blooming — that’s the Good Life She way.',
+    '🪷 Remember: your self-care is non-negotiable.',
+    '💧 Clean ingredients, clear mind, glowing skin.',
+    '🌞 A sun-kissed life wrapped in good vibes.',
+    '🌙 Night routine = sacred time. Treat it like art.',
+    '🔥 Confidence is your best skincare product.',
+    '🍃 Simple rituals, powerful results.',
+    '🏝️ Bringing beach serenity to your daily routine.',
+    '💫 Small steps, big glow-ups.',
+    '🌸 For every woman cultivating her own paradise.',
+    '🕊️ Soft mornings, strong spirit.',
+    '🌻 Bloom wildly, darling.',
+    '🤎 Earth tones, inner tones, good tones.',
+    '🚿 Self-care is the new hustle.',
+    '🥥 Coconut-kisses & collagen dreams.',
+    '🧘‍♀️ Inhale peace, exhale anything else.'
+  ]);
+
+  const images = shuffle_([
+    'https://i.imgur.com/ZAqA2yI.png', 'https://i.imgur.com/cS8xJYx.png', 'https://i.imgur.com/FidewKu.png',
+    'https://i.imgur.com/IHMj8uC.png', 'https://i.imgur.com/cGlQiis.png', 'https://i.imgur.com/Cf9EmYu.png',
+    'https://i.imgur.com/8L4si4G.png', 'https://i.imgur.com/qHTkl1w.png', 'https://i.imgur.com/83KorJ0.png',
+    'https://i.imgur.com/IYMwhUi.png', 'https://i.imgur.com/oDxHjQv.png', 'https://i.imgur.com/xeupsV9.png',
+    'https://i.imgur.com/Um1jwkJ.png', 'https://i.imgur.com/U0d84FL.png', 'https://i.imgur.com/0C95lWa.png',
+    'https://i.imgur.com/YZfsxkC.png', 'https://i.imgur.com/pM9jwjK.png', 'https://i.imgur.com/Yxccw5j.png',
+    'https://i.imgur.com/pMmBQFJ.png', 'https://i.imgur.com/gdn8xMC.png', 'https://i.imgur.com/RrAg98o.png',
+    'https://i.imgur.com/WxCIElX.png', 'https://i.imgur.com/9cOsHEP.png', 'https://i.imgur.com/YjqmfAr.png',
+    'https://i.imgur.com/Nr9lWxU.png', 'https://i.imgur.com/aMWdRDF.png', 'https://i.imgur.com/7SkG9xa.png',
+    'https://i.imgur.com/yCUMRUP.png', 'https://i.imgur.com/5u3eK09.png', 'https://i.imgur.com/G6aB4ER.png',
+    'https://i.imgur.com/EUcLTsn.png', 'https://i.imgur.com/xH8bj3M.png', 'https://i.imgur.com/3dXwQWh.png',
+    'https://i.imgur.com/jzdNjkC.png', 'https://i.imgur.com/Mh1mdZm.png'
+  ]);
+
+  const props = PropertiesService.getScriptProperties();
+  const used = JSON.parse(props.getProperty('GLS_usedInstagramImgs') || '[]');
+
+  let pool = images.filter(url => !used.includes(url));
+  if (pool.length === 0) {
+    pool = [...images];
+    props.setProperty('GLS_usedInstagramImgs', JSON.stringify([]));
+  }
+
+  ['Morning', 'Afternoon'].forEach(slot => {
+    const caption = captions.pop();
+    const image = pool.splice(Math.floor(Math.random() * pool.length), 1)[0];
+    const fullPost = `${caption}\n\n${WEBSITE}\n\n${hashtags}`;
+
+    sheet.appendRow([
+      date,         // Date
+      fullPost,     // Post Text
+      image,        // Image Url
+      '',           // Post to FB (left blank)
+      'Yes',        // Post to IG
+      'READY'       // Status
+    ]);
+
+    used.push(image);
+  });
+
+  props.setProperty('GLS_usedInstagramImgs', JSON.stringify(used));
+  Logger.log('✅ 2 Instagram posts scheduled for Good Life She.');
+}
